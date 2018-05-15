@@ -18,12 +18,14 @@ class BarcodeGeneratorPNG extends BarcodeGenerator
      * @return string image data or false in case of error.
      * @public
      */
-    public function getBarcode($code, $type, $widthFactor = 2, $totalHeight = 30, $color = array(0, 0, 0))
+    public function getBarcode($code, $type, $widthFactor = 2, $totalHeight = 30, $color = array(0, 0, 0), $transparent = true)
     {
         $barcodeData = $this->getBarcodeData($code, $type);
 
+        $positionHorizontal = 10;
+
         // calculate image size
-        $width = ($barcodeData['maxWidth'] * $widthFactor);
+        $width = ($barcodeData['maxWidth'] * $widthFactor) + ($positionHorizontal * 2);
         $height = $totalHeight;
 
         if (function_exists('imagecreate')) {
@@ -31,13 +33,19 @@ class BarcodeGeneratorPNG extends BarcodeGenerator
             $imagick = false;
             $png = imagecreate($width, $height);
             $colorBackground = imagecolorallocate($png, 255, 255, 255);
-            imagecolortransparent($png, $colorBackground);
+            if($transparent){
+                imagecolortransparent($png, $colorBackground);
+            }
             $colorForeground = imagecolorallocate($png, $color[0], $color[1], $color[2]);
         } elseif (extension_loaded('imagick')) {
             $imagick = true;
             $colorForeground = new \imagickpixel('rgb(' . $color[0] . ',' . $color[1] . ',' . $color[2] . ')');
             $png = new \Imagick();
-            $png->newImage($width, $height, 'none', 'png');
+            if($transparent){
+                $png->newImage($width, $height, 'none', 'png');
+            }else{
+                 $png->newImage($width, $height, new \imagickpixel('white'), 'png');
+            }
             $imageMagickObject = new \imagickdraw();
             $imageMagickObject->setFillColor($colorForeground);
         } else {
@@ -45,7 +53,7 @@ class BarcodeGeneratorPNG extends BarcodeGenerator
         }
 
         // print bars
-        $positionHorizontal = 0;
+        
         foreach ($barcodeData['bars'] as $bar) {
             $bw = round(($bar['width'] * $widthFactor), 3);
             $bh = round(($bar['height'] * $totalHeight / $barcodeData['maxHeight']), 3);
