@@ -22,8 +22,10 @@ class BarcodeGeneratorPNG extends BarcodeGenerator
     {
         $barcodeData = $this->getBarcodeData($code, $type);
 
+        $positionHorizontal = 10;
+
         // calculate image size
-        $width = ($barcodeData['maxWidth'] * $widthFactor);
+        $width = ($barcodeData['maxWidth'] * $widthFactor) + ($positionHorizontal * 2);
         $height = $totalHeight;
 
         if (function_exists('imagecreate')) {
@@ -51,7 +53,7 @@ class BarcodeGeneratorPNG extends BarcodeGenerator
         }
 
         // print bars
-        $positionHorizontal = 0;
+        
         foreach ($barcodeData['bars'] as $bar) {
             $bw = round(($bar['width'] * $widthFactor), 3);
             $bh = round(($bar['height'] * $totalHeight / $barcodeData['maxHeight']), 3);
